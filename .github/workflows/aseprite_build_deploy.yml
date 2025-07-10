@@ -31,11 +31,9 @@ jobs:
         VERSION_INFO=$(echo "${data}" | jq -r '.body')
 
         echo "${LATEST_TAG}" > ${LATEST_TAG}.txt
-        echo "latest_tag=${LATEST_TAG}" >> $GITHUB_OUTPUT
-        echo "download_url=${DOWNLOAD_URL}" >> $GITHUB_OUTPUT
-        echo "version_info<<EOF" >> $GITHUB_OUTPUT
-        echo "$VERSION_INFO" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        echo "::set-output name=latest_tag::${LATEST_TAG}"
+        echo "::set-output name=download_url::${DOWNLOAD_URL}"
+        echo "::set-output name=version_info::${VERSION_INFO}"
     - name: Load version from cache
       id: version_check
       uses: actions/cache@v3
