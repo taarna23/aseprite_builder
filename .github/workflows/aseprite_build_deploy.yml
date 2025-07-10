@@ -20,7 +20,6 @@ jobs:
       download_url: ${{ steps.version_info.outputs.download_url }}
       latest_tag: ${{ steps.version_info.outputs.latest_tag }}
       should_build: ${{ steps.should_build.outputs.should_build }}
-      upload_url: ${{ steps.sanitize_upload_url.outputs.upload_url }}
     steps:
     - name: Get latest version info
       id: version_info
@@ -47,23 +46,16 @@ jobs:
       if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/fix' || steps.version_check.outputs.cache-hit != 'true'
       run: echo "should_build=true" >> $GITHUB_OUTPUT
     - name: Create Release
-      id: create_release
       if: steps.should_build.outputs.should_build
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.version_info.outputs.latest_tag }}
-        release_name: Release Aseprite ${{ steps.version_info.outputs.latest_tag }}
-        body: |
-          ${{ steps.version_info.outputs.version_info }}
-        draft: true
-        prerelease: false
-    - name: Sanitize upload_url
-      id: sanitize_upload_url
-      if: steps.create_release.outputs.upload_url
+        LATEST_TAG: ${{ steps.version_info.outputs.latest_tag }}
+        VERSION_INFO: ${{ steps.version_info.outputs.version_info }}
       run: |
-        echo "upload_url=$(echo "${{ steps.create_release.outputs.upload_url }}" | sed 's/{.*}//')" >> $GITHUB_OUTPUT
+        gh release create "$LATEST_TAG" \
+          --draft \
+          --title "Release Aseprite $LATEST_TAG" \
+          --notes "$VERSION_INFO"
 
   build-aseprite:
     name: Build Aseprite
@@ -144,12 +136,7 @@ jobs:
       - name: Create release
         working-directory: aseprite/build/bin
         run: 7z -tzip a Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip *
-      - name: Upload release
-        uses: actions/upload-release-asset@v1
+      - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.check-version.outputs.upload_url }}
-          asset_path: aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip
-          asset_name: Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip
-          asset_content_type: application/zip
+        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip
