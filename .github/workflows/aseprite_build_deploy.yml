@@ -27,9 +27,11 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Use gh to robustly fetch the latest release tag and body from the official Aseprite repo
-        gh release view --repo aseprite/aseprite --json tagName,body --template '{{`{`}}"tag":{{.tagName | json}},"body":{{.body | json}}{{"}"}}' > release_info.json
-        echo "tag=$(jq -r .tag release_info.json)" >> $GITHUB_OUTPUT
+        # Use gh's --jq flag to directly extract the tag and body, avoiding template errors.
+        LATEST_TAG=$(gh release view --repo aseprite/aseprite --json tagName --jq .tagName)
+        echo "tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+
+        gh release view --repo aseprite/aseprite --json body --jq .body > release_notes.md
     - name: Get latest built release tag
       id: built_release
       env:
@@ -57,7 +59,7 @@ jobs:
         gh release create ${{ steps.aseprite_release.outputs.tag }} \
           --draft \
           --title "Aseprite ${{ steps.aseprite_release.outputs.tag }}" \
-          --notes-file release_info.json
+          --notes-file release_notes.md
 
   build-aseprite:
     name: Build Aseprite on ${{ matrix.os }}
