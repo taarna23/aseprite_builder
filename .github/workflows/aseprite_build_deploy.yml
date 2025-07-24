@@ -110,6 +110,7 @@ jobs:
           repository: aseprite/aseprite
           ref: ${{ needs.check-version.outputs.latest_tag }}
           path: aseprite
+          submodules: 'recursive'
       - name: Create build directory
         run: mkdir -p aseprite/build
       - name: (Windows) Set architecture for the produced binary
