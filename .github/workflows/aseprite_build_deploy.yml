@@ -77,6 +77,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4 # Provides context for gh release upload
+      - name: Get current date
+        id: date
+        shell: bash
+        run: echo "today=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
       - name: (Windows) Install dependencies
         if: matrix.os == 'windows-latest'
         uses: seanmiddleditch/gha-setup-ninja@v3
@@ -145,8 +149,8 @@ jobs:
         run: echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
       - name: Create release
         working-directory: aseprite/build/bin
-        run: 7z -tzip a Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip *
+        run: 7z -tzip a Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip *
       - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip
+        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip
