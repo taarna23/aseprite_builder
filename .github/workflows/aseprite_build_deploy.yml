@@ -153,4 +153,4 @@ jobs:
       - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip --clobber
+        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} ${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip --clobber
