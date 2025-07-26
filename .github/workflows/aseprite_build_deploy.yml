@@ -39,7 +39,7 @@ jobs:
       run: |
         # Get the tag of the latest release in this repo. Fails gracefully if no releases exist.
         # This requires the GITHUB_TOKEN to see draft releases.
-        tag=$(gh release list --draft=true --limit 1 --json tagName -q '.[0].tagName' || echo "none")
+        tag=$(gh release list --repo ${{ github.repository }} --draft=true --limit 1 --json tagName -q '.[0].tagName' || echo "none")
         echo "tag=$tag" >> $GITHUB_OUTPUT
     - name: Decide if we should build
       id: decision
@@ -57,6 +57,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release create ${{ steps.aseprite_release.outputs.tag }} \
+          --repo ${{ github.repository }} \
           --draft \
           --title "Aseprite ${{ steps.aseprite_release.outputs.tag }}" \
           --notes-file release_notes.md
@@ -153,4 +154,4 @@ jobs:
       - name: Upload release asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} ${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip --clobber
+        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip --clobber --repo ${{ github.repository }}
