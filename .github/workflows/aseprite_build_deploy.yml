@@ -155,4 +155,6 @@ jobs:
         working-directory: aseprite/build/bin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.check-version.outputs.latest_tag }} Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip --clobber --repo ${{ github.repository }}
+        run: |
+          set -e
+          gh release upload ${{ needs.check-version.outputs.latest_tag }} Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}-${{ steps.date.outputs.today }}.zip --clobber --repo ${{ github.repository }}
